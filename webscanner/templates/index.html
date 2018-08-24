@@ -4,11 +4,11 @@
 	<h2>Welcome to Web Scanner FrontEnd</h2>
 </div>
 <button id="butScan" type="button" class="btn btn-primary btn-lg">Scan document</button>
-<button type="button" class="btn btn-primary btn-lg">Save copy</button>
-<button type="button" class="btn btn-primary btn-lg">E-mail PDF!</button>
+<button id="butSave" type="button" class="btn btn-primary btn-lg">Save copy</button>
+<button id="butEmail" type="button" class="btn btn-primary btn-lg">E-mail PDF!</button>
 <br>
 <br>
-<button type="button" class="btn btn-warning btn-lg">Clear PDFs</button>
+<button id="butClear" type="button" class="btn btn-warning btn-lg">Clear PDFs</button>
 <br>
 <br>
 Action:<br>
@@ -17,9 +17,16 @@ Action:<br>
  <script>
 	 $(document).ready(function(){
 	 	$("#butScan").click(function(e) {	 	    
-	 		// currentText = $("#actions").html();
-	 	    // $("#actions").html("Hello" + "\n" + currentText);
 	 	    $("#actions").load("{{ url_for('scanDo') }}");
+	 	});
+	 	$("#butSave").click(function(e) {	 	    
+	 	    $("#actions").load("{{ url_for('scanSave') }}");
+	 	});
+	 	$("#butEmail").click(function(e) {	 	    
+	 	    $("#actions").load("{{ url_for('scanEmail') }}");
+	 	});
+	 	$("#butClear").click(function(e) {	 	    
+	 	    $("#actions").load("{{ url_for('scanClear') }}");
 	 	});
 
 	 });
