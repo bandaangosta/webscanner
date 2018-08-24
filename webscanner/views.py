@@ -15,7 +15,7 @@ def index():
 def scanDo():
     # Change call for Popen if you want a non-blocking process
     try:
-	    call(['scanDo'])
+	    Popen(['scanDo'])
 	    return 'Scan command was sent'
     except:
 	    return 'Scan command failed'
@@ -24,7 +24,7 @@ def scanDo():
 def scanClear():
     # Change call for Popen if you want a non-blocking process
     try:
-	    call(['scanClear'])
+	    Popen(['scanClear'])
 	    return 'Clear PDFs command was sent'
     except:
 	    return 'Clear PDFs failed'
@@ -33,7 +33,7 @@ def scanClear():
 def scanSave():
     # Change call for Popen if you want a non-blocking process
     try:
-	    call(['scanSave'])
+	    Popen(['scanSave'])
 	    return 'Merged PDF copy command was sent'
     except:
 	    return 'Merged PDF copy failed'
