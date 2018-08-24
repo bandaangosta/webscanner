@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container-fluid text-center">
+	<h2>Welcome to Web Scanner FrontEnd</h2>
+</div>
+<button id="butScan" type="button" class="btn btn-primary btn-lg">Scan document</button>
+<button type="button" class="btn btn-primary btn-lg">Save copy</button>
+<button type="button" class="btn btn-primary btn-lg">E-mail PDF!</button>
+<br>
+<br>
+<button type="button" class="btn btn-warning btn-lg">Clear PDFs</button>
+<br>
+<br>
+Action:<br>
+ <textarea id="actions" style="width:50%; height: 100px"></textarea>
+
+ <script>
+	 $(document).ready(function(){
+	 	$("#butScan").click(function(e) {	 	    
+	 		// currentText = $("#actions").html();
+	 	    // $("#actions").html("Hello" + "\n" + currentText);
+	 	    $("#actions").load("{{ url_for('scanDo') }}");
+	 	});
+
+	 });
+ </script>
+
+{% endblock %}

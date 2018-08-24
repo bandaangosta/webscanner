@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WebScanner</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Bootstrap 4.1.0 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/bootstrap.min.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/css/font-awesome.min.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style type="text/css">
+
+    </style>
+
+  </head>
+  <body>
+
+  <!-- JQuery 3.3.1 -->
+  <script src="{{ url_for('static', filename='vendor/js/jquery-3.3.1.min.js') }}"></script>
+   <!-- Popper 1.14.0 -->
+  <script src="{{ url_for('static', filename='vendor/js/popper.min.js') }}"></script>
+  <!-- Bootstrap 4.1.0 -->
+  <script src="{{ url_for('static', filename='vendor/js/bootstrap.min.js') }}"></script>
+
+    <div class="container-fluid">
+
+      {% for message in get_flashed_messages(category_filter=['error']) %}
+        <div class="flash alert alert-danger">{{ message }}</div>
+      {% endfor %}
+
+      {% for message in get_flashed_messages(category_filter=['success']) %}
+        <div class="flash alert alert-success">{{ message }}</div>
+      {% endfor %}
+
+      <div class="container-fluid">
+      {% block body %}{% endblock %}
+      </div>
+
+  </div>
+
+    <footer class="footer row-margin-footer text-center">
+      <div class="container">
+        <span class="text-muted">Brought to you by @bandaangosta</span>
+      </div>
+    </footer>
+  </body>
+</html>
