@@ -45,7 +45,7 @@ def scanEmail():
 @app.route('/download')
 def scanDownload():
 	# define PDF_FILE_PATH in instance/settings.py
-	if os.path.exists(app.config.get('PDF_FILE_PATH')):
+	if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
 	    return send_file(app.config['PDF_FILE_PATH'],
 	                     attachment_filename="scan.pdf",
 	                     mimetype='application/pdf',
