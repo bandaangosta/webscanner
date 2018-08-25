@@ -9,7 +9,7 @@ venv:
 	virtualenv --python=python3 venv && venv/bin/pip install --editable .
 
 run: venv
-	FLASK_APP=webscanner WEBSCANNER_SETTINGS=../settings.cfg venv/bin/flask run
+	FLASK_APP=webscanner WEBSCANNER_SETTINGS=../settings.cfg venv/bin/flask run --host=0.0.0.0
 
 test: venv
 	WEBSCANNER_SETTINGS=../settings.cfg venv/bin/python -m unittest discover -s tests
