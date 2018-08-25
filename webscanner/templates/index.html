@@ -5,6 +5,7 @@
 </div>
 <button id="butScan" type="button" class="btn btn-primary btn-lg m-2">Scan document</button>
 <button id="butSave" type="button" class="btn btn-primary btn-lg m-2">Save copy</button>
+<a id="butDownload" href="{{ url_for('scanDownload') }}" class="btn btn-primary btn-lg m-2">Download PDF</a>
 <button id="butEmail" type="button" class="btn btn-primary btn-lg m-2">E-mail PDF!</button>
 <br>
 <button id="butClear" type="button" class="btn btn-warning btn-lg m-2">Clear PDFs</button>
@@ -20,6 +21,11 @@ Action:<br>
 	 	});
 	 	$("#butSave").click(function(e) {	 	    
 	 	    $("#actions").load("{{ url_for('scanSave') }}");
+	 	});
+	 	$("#butDownload").click(function(e) {	 	    
+	 	    e.preventDefault();
+	 	    $("#actions").html('Downloading scanned file...');
+	 	    $(location).attr('href', $(this).attr("href"));
 	 	});
 	 	$("#butEmail").click(function(e) {	 	    
 	 	    $("#actions").load("{{ url_for('scanEmail') }}");

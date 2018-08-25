@@ -1,7 +1,7 @@
 import os
 import glob
 import json
-from flask import render_template, request, url_for, flash, redirect
+from flask import render_template, url_for, flash, send_file
 import traceback
 from subprocess import call,Popen
 
@@ -41,6 +41,17 @@ def scanSave():
 @app.route('/email')
 def scanEmail():
     return 'NOT IMPLEMENTED'
+
+@app.route('/download')
+def scanDownload():
+	# define PDF_FILE_PATH in instance/settings.py
+	if os.path.exists(app.config['PDF_FILE_PATH']):
+	    return send_file(app.config['PDF_FILE_PATH'],
+	                     attachment_filename="scan.pdf",
+	                     mimetype='application/pdf',
+	                     as_attachment=True)
+	else:
+	    return "There was an error downloading requested PDF file. File not found."	
 
 @app.errorhandler(404)
 def pageNotFound(error):
