@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
-<div class="container-fluid text-center">
-	<h2>Welcome to Web Scanner FrontEnd</h2>
-</div>
-<button id="butScan" type="button" class="btn btn-primary btn-lg m-2">Scan document</button>
-<button id="butSave" type="button" class="btn btn-primary btn-lg m-2">Save copy</button>
-<a id="butDownload" href="{{ url_for('scanDownload') }}" class="btn btn-primary btn-lg m-2">Download PDF</a>
-<button id="butEmail" type="button" class="btn btn-primary btn-lg m-2">E-mail PDF!</button>
-<br>
-<button id="butClear" type="button" class="btn btn-warning btn-lg m-2">Clear PDFs</button>
-<br>
-<br>
-Action:<br>
- <textarea id="actions" style="width:100%; height: 100px"></textarea>
+<div class="container text-center">
+	<h2>Welcome to Web Scanner</h2>
 
+	<button id="butScan" type="button" class="btn btn-primary btn-lg m-2">Scan document</button>
+	<button id="butSave" type="button" class="btn btn-primary btn-lg m-2">Save copy</button>
+	<a id="butDownload" href="{{ url_for('scanDownload') }}" class="btn btn-primary btn-lg m-2">Download PDF</a>
+	<button id="butEmail" type="button" class="btn btn-primary btn-lg m-2">E-mail PDF!</button>
+	<br>
+	<button id="butClear" type="button" class="btn btn-warning btn-lg m-2">Clear PDFs</button>
+	<br>
+	<br>
+	Action:<br>
+	 <textarea id="actions" style="width:100%; height: 100px"></textarea>
+</div>
  <script>
 	 $(document).ready(function(){
 	 	$("#butScan").click(function(e) {	 	    
