@@ -1,7 +1,8 @@
 import os
 import glob
 import json
-from flask import render_template, url_for, flash, send_file
+from flask import render_template, send_file, request
+import yagmail
 import traceback
 from subprocess import call,Popen
 
@@ -13,7 +14,7 @@ def index():
 
 @app.route('/scan')
 def scanDo():
-    # Change call for Popen if you want a non-blocking process
+    # Use "Popen" if you want a non-blocking process; "call" for blocking
     try:
 	    Popen(['scanDo'])
 	    return 'Scan command was sent'
@@ -22,7 +23,7 @@ def scanDo():
 
 @app.route('/clear')
 def scanClear():
-    # Change call for Popen if you want a non-blocking process
+    # Use "Popen" if you want a non-blocking process; "call" for blocking
     try:
 	    Popen(['scanClear'])
 	    return 'Clear PDFs command was sent'
@@ -31,7 +32,7 @@ def scanClear():
 
 @app.route('/save')
 def scanSave():
-    # Change call for Popen if you want a non-blocking process
+    # Use "Popen" if you want a non-blocking process; "call" for blocking
     try:
 	    Popen(['scanSave'])
 	    return 'Merged PDF copy command was sent'
@@ -40,11 +41,32 @@ def scanSave():
 
 @app.route('/email')
 def scanEmail():
-    return 'NOT IMPLEMENTED'
+	'''
+	This function relies on yagmail library sending e-mail through a Gmail account using OAuth authentication. 
+	See https://github.com/kootenpv/yagmail for details on how to setup the credentials. Define Gmail account and
+	path to credentials file in <instance folder>/settings.py
+	You can remove permissions to the account in: https://myaccount.google.com/permissions
+	'''	
+	if app.config.get('GMAIL_ACCOUNT') is None or app.config.get('GMAIL_ACCOUNT_CREDENTIALS') is None:
+		return 'Gmail account not configured'
+	
+	recipient = request.args.get('email')		
+	if recipient is None:
+		return 'No e-mail recipient was defined'
+
+	try:
+		yag = yagmail.SMTP(app.config['GMAIL_ACCOUNT'], oauth2_file=app.config['GMAIL_ACCOUNT_CREDENTIALS'])
+		yag.send(to=recipient, 
+				 subject='Scanned document', 
+				 contents='Find scanned document attached. \n\nSent by WebScanner.', 
+				 attachments=[app.config.get('PDF_FILE_PATH')])   
+		return 'E-mail was sent'
+	except:
+		return 'Failed to send e-mail'
 
 @app.route('/download')
 def scanDownload():
-	# define PDF_FILE_PATH in instance/settings.py
+	# Define PDF_FILE_PATH in <instance folder>/settings.py
 	if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
 	    return send_file(app.config['PDF_FILE_PATH'],
 	                     attachment_filename="scan.pdf",
