@@ -1,9 +1,9 @@
 import os
-import glob
-import json
 from flask import render_template, send_file, request
 import yagmail
 import traceback
+import tempfile
+import shutil
 from subprocess import call,Popen
 
 from webscanner import app
@@ -54,22 +54,37 @@ def scanEmail():
 	if recipient is None:
 		return 'No e-mail recipient was defined'
 
+	fileName = request.args.get('filename')		
+	if fileName is None:
+		return 'No file name was defined'
+	
+	if not os.path.exists(app.config.get('PDF_FILE_PATH')):
+		return 'Scanned file was not found'
+	
+	# Create a copy of the scanned file with given name
+	tmpdir = tempfile.gettempdir()
+	shutil.copyfile(app.config.get('PDF_FILE_PATH'), os.path.join(tmpdir, fileName))
+
 	try:
 		yag = yagmail.SMTP(app.config['GMAIL_ACCOUNT'], oauth2_file=app.config['GMAIL_ACCOUNT_CREDENTIALS'])
 		yag.send(to=recipient, 
 				 subject='Scanned document', 
 				 contents='Find scanned document attached. \n\nSent by WebScanner.', 
-				 attachments=[app.config.get('PDF_FILE_PATH')])   
+				 attachments=[os.path.join(tmpdir, fileName)])   
 		return 'E-mail was sent'
 	except:
 		return 'Failed to send e-mail'
 
 @app.route('/download')
 def scanDownload():
+	fileName = request.args.get('filename')		
+	if fileName is None:
+		return 'No file name was defined'
+
 	# Define PDF_FILE_PATH in <instance folder>/settings.py
 	if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
 	    return send_file(app.config['PDF_FILE_PATH'],
-	                     attachment_filename="scan.pdf",
+	                     attachment_filename=fileName,
 	                     mimetype='application/pdf',
 	                     as_attachment=True)
 	else:
