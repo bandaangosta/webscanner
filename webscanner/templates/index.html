@@ -2,17 +2,56 @@
 {% block body %}
 <div class="container text-center">
 	<h2>Web Scanner</h2>
-
-	<button id="butScan" type="button" class="btn btn-primary btn-lg m-2">Scan document</button>
-	<button id="butSave" type="button" class="btn btn-primary btn-lg m-2">Save copy</button>
-	<button type="button" data-toggle="modal" data-target="#modalDownload" class="btn btn-primary btn-lg m-2">Download PDF</button>
-	<button type="button" data-toggle="modal" data-target="#modalSendEmail" class="btn btn-primary btn-lg m-2">E-mail PDF</button>
-	<br>
-	<button id="butClear" type="button" class="btn btn-warning btn-lg m-2">Clear PDFs</button>
+	<div class="btn-group-vertical" role="group" aria-label="Actions">
+		<button type="button" data-toggle="modal" data-target="#modalScan" class="btn btn-primary m-2">Scan document</button>
+		<button id="butSave" type="button" class="btn btn-primary m-2">Save copy</button>
+		<button type="button" data-toggle="modal" data-target="#modalDownload" class="btn btn-primary m-2">Download PDF</button>
+		<button type="button" data-toggle="modal" data-target="#modalSendEmail" class="btn btn-primary m-2">E-mail PDF</button>
+		<button id="butClear" type="button" class="btn btn-warning m-2">Clear PDFs</button>
+	</div>
 	<br>
 	<br>
 	Console:<br>
 	 <textarea id="actions" style="width:100%; height: 100px" readonly></textarea>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalScan" tabindex="-1" role="dialog" aria-labelledby="modalScan" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Scan document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+	   <div class="modal-body">
+	   	<div class="form-group">
+	   		<label for="resolution">Resolution</label>
+	   		<select id="resolution" class="custom-select">
+	   			{% for resolution in scanResolutionOptions %}
+	   			<option value="{{ resolution | safe }}">{{ resolution }}</option>
+	   			{% else %}
+	   			<option value="-1">No resolution is available</option>
+	   			{% endfor %}
+	   		</select>
+	   	</div>
+	   	<div class="form-group">
+	   		<label for="mode">Mode</label>
+	   		<select id="mode" class="custom-select">
+	   			{% for mode in scanModeOptions %}
+	   			<option value="{{ mode }}">{{ mode }}</option>
+	   			{% else %}
+	   			<option value="-1">No scan mode is available</option>
+	   			{% endfor %}
+	   		</select>
+	   	</div>
+	   </div>
+	   <div class="modal-footer">
+	     <button id="butScan" type="button" class="btn btn-primary">Scan</button>
+	   </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal -->
@@ -67,9 +106,15 @@
 
  <script>
 	 $(document).ready(function(){
+	 	$('#resolution').val("{{ scanResolutionDefault }}");
+	 	$('#mode').val("{{ scanModeDefault | safe }}");	 
+
 	 	$("#butScan").click(function(e) {	 	    
+	 		var url = "{{ url_for('scanDo') }}";
+
+	 		$('#modalScan').modal('hide');	 			 		
 	 		$("#actions").html('Sending scan command. Please wait...');
-	 	    $("#actions").load("{{ url_for('scanDo') }}");
+	 	    $("#actions").load(url + '?resolution=' + $('#resolution').val() + '&mode=' + encodeURIComponent($('#mode').val()));
 	 	});
 	 	$("#butSave").click(function(e) {	 	    
 	 		$("#actions").html('Sending save command...');

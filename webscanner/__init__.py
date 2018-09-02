@@ -18,6 +18,12 @@ app.config['GMAIL_ACCOUNT'] = None
 app.config['GMAIL_ACCOUNT_CREDENTIALS'] = None
 app.config['DEFAULT_RECIPIENT'] = None
 
+# Obtain available options for your scanner with scanimage -L
+SCAN_MODE_OPTIONS = []
+SCAN_MODE_DEFAULT = None
+SCAN_RES_OPTIONS = []
+SCAN_RES_DEFAULT = None
+
 # Override previous definitions from variables in settings.py in instance folder
 app.config.from_pyfile('settings.py', silent=True)
 

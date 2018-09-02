@@ -9,14 +9,33 @@ from webscanner import app
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', 
+                           scanResolutionOptions = app.config.get('SCAN_RES_OPTIONS'), 
+                           scanResolutionDefault = app.config.get('SCAN_RES_DEFAULT'),
+                           scanModeOptions = app.config.get('SCAN_MODE_OPTIONS'),
+                           scanModeDefault = app.config.get('SCAN_MODE_DEFAULT')
+                          )
 
 @app.route('/scan')
 def scanDo():
     ''' Run scan command (bash script) and return console output for display to user '''
+
+    resolution = request.args.get('resolution')       
+    if resolution is None:
+        return 'No scan resolution was defined'
+
+    mode = request.args.get('mode')     
+    if mode is None:
+        return 'No scan mode was defined'
     
+    if int(resolution) not in app.config.get('SCAN_RES_OPTIONS'):
+        return 'Resolution is not a valid option'
+
+    if mode not in app.config.get('SCAN_MODE_OPTIONS'):
+        return 'Mode is not a valid option'
+    print(mode)
     try:
-        args = ['scanDo']
+        args = ['scanDo', resolution, mode]
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         try:
             outs, errs = proc.communicate(timeout=30)
