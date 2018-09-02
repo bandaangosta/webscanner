@@ -4,8 +4,7 @@ import yagmail
 import traceback
 import tempfile
 import shutil
-from subprocess import call,Popen
-
+from subprocess import Popen, TimeoutExpired, PIPE
 from webscanner import app
 
 @app.route('/')
@@ -14,81 +13,115 @@ def index():
 
 @app.route('/scan')
 def scanDo():
-    # Use "Popen" if you want a non-blocking process; "call" for blocking
+    ''' Run scan command (bash script) and return console output for display to user '''
+    
     try:
-	    Popen(['scanDo'])
-	    return 'Scan command was sent'
+        args = ['scanDo']
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        try:
+            outs, errs = proc.communicate(timeout=30)
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()     
+            return 'Scan command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
+                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+        return 'Scan command finished. \nOutput:\n{}'.format(outs.decode('utf-8')) + \
+               '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+    except FileNotFoundError:
+        return 'Scan command failed: {} not found'.format(args[0]) 
     except:
-	    return 'Scan command failed'
+        return 'Scan command failed'
 
 @app.route('/clear')
 def scanClear():
-    # Use "Popen" if you want a non-blocking process; "call" for blocking
+    ''' Run clear PDFs command (bash script) and return console output for display to user '''
+    
     try:
-	    Popen(['scanClear'])
-	    return 'Clear PDFs command was sent'
+        args = ['scanClear']
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        try:
+            outs, errs = proc.communicate(timeout=30)
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()     
+            return 'Clear PDFs command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
+                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+        return 'Clear PDFs command finished.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
+                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+    except FileNotFoundError:
+        return 'Clear PDFs command failed: {} not found'.format(args[0]) 
     except:
-	    return 'Clear PDFs failed'
+        return 'Clear PDFs command failed'
 
 @app.route('/save')
 def scanSave():
-    # Use "Popen" if you want a non-blocking process; "call" for blocking
+    ''' Run save PDF command (bash script) and return console output for display to user '''
+    
     try:
-	    Popen(['scanSave'])
-	    return 'Merged PDF copy command was sent'
+        args = ['scanSave']
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        try:
+            outs, errs = proc.communicate(timeout=30)
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()     
+            return 'Merged PDF copy command timeout.\nOutput:\n{}\nErrors:\n{}'.format(outs.decode('utf-8'), errs.decode('utf-8'))
+        return 'Merged PDF copy command finished. \nOutput:\n{}\nErrors:\n{}'.format(outs.decode('utf-8'), errs.decode('utf-8'))
+    except FileNotFoundError:
+        return 'Merged PDF copy command failed: {} not found'.format(args[0]) 
     except:
-	    return 'Merged PDF copy failed'
+        return 'Merged PDF copy command failed'
 
 @app.route('/email')
 def scanEmail():
-	'''
-	This function relies on yagmail library sending e-mail through a Gmail account using OAuth authentication. 
-	See https://github.com/kootenpv/yagmail for details on how to setup the credentials. Define Gmail account and
-	path to credentials file in <instance folder>/settings.py
-	You can remove permissions to the account in: https://myaccount.google.com/permissions
-	'''	
-	if app.config.get('GMAIL_ACCOUNT') is None or app.config.get('GMAIL_ACCOUNT_CREDENTIALS') is None:
-		return 'Gmail account not configured'
-	
-	recipient = request.args.get('email')		
-	if recipient is None:
-		return 'No e-mail recipient was defined'
+    '''
+    This function relies on yagmail library sending e-mail through a Gmail account using OAuth authentication. 
+    See https://github.com/kootenpv/yagmail for details on how to setup the credentials. Define Gmail account and
+    path to credentials file in <instance folder>/settings.py
+    You can remove permissions to the account in: https://myaccount.google.com/permissions
+    ''' 
+    if app.config.get('GMAIL_ACCOUNT') is None or app.config.get('GMAIL_ACCOUNT_CREDENTIALS') is None:
+        return 'Gmail account not configured'
+    
+    recipient = request.args.get('email')       
+    if recipient is None:
+        return 'No e-mail recipient was defined'
 
-	fileName = request.args.get('filename')		
-	if fileName is None:
-		return 'No file name was defined'
-	
-	if not os.path.exists(app.config.get('PDF_FILE_PATH')):
-		return 'Scanned file was not found'
-	
-	# Create a copy of the scanned file with given name
-	tmpdir = tempfile.gettempdir()
-	shutil.copyfile(app.config.get('PDF_FILE_PATH'), os.path.join(tmpdir, fileName))
+    fileName = request.args.get('filename')     
+    if fileName is None:
+        return 'No file name was defined'
+    
+    if not os.path.exists(app.config.get('PDF_FILE_PATH')):
+        return 'Scanned file was not found'
+    
+    # Create a copy of the scanned file with given name
+    tmpdir = tempfile.gettempdir()
+    shutil.copyfile(app.config.get('PDF_FILE_PATH'), os.path.join(tmpdir, fileName))
 
-	try:
-		yag = yagmail.SMTP(app.config['GMAIL_ACCOUNT'], oauth2_file=app.config['GMAIL_ACCOUNT_CREDENTIALS'])
-		yag.send(to=recipient, 
-				 subject='Scanned document', 
-				 contents='Find scanned document attached. \n\nSent by WebScanner.', 
-				 attachments=[os.path.join(tmpdir, fileName)])   
-		return 'E-mail was sent'
-	except:
-		return 'Failed to send e-mail'
+    try:
+        yag = yagmail.SMTP(app.config['GMAIL_ACCOUNT'], oauth2_file=app.config['GMAIL_ACCOUNT_CREDENTIALS'])
+        yag.send(to=recipient, 
+                 subject='Scanned document', 
+                 contents='Find scanned document attached. \n\nSent by WebScanner.', 
+                 attachments=[os.path.join(tmpdir, fileName)])   
+        return 'E-mail was sent'
+    except:
+        return 'Failed to send e-mail'
 
 @app.route('/download')
 def scanDownload():
-	fileName = request.args.get('filename')		
-	if fileName is None:
-		return 'No file name was defined'
+    fileName = request.args.get('filename')     
+    if fileName is None:
+        return 'No file name was defined'
 
-	# Define PDF_FILE_PATH in <instance folder>/settings.py
-	if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
-	    return send_file(app.config['PDF_FILE_PATH'],
-	                     attachment_filename=fileName,
-	                     mimetype='application/pdf',
-	                     as_attachment=True)
-	else:
-	    return "There was an error downloading requested PDF file. File not found."	
+    # Define PDF_FILE_PATH in <instance folder>/settings.py
+    if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
+        return send_file(app.config['PDF_FILE_PATH'],
+                         attachment_filename=fileName,
+                         mimetype='application/pdf',
+                         as_attachment=True)
+    else:
+        return "There was an error downloading requested PDF file. File not found." 
 
 @app.errorhandler(404)
 def pageNotFound(error):
