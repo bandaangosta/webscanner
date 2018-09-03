@@ -33,7 +33,7 @@ def scanDo():
 
     if mode not in app.config.get('SCAN_MODE_OPTIONS'):
         return 'Mode is not a valid option'
-    print(mode)
+
     try:
         args = ['scanDo', resolution, mode]
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
