@@ -1,6 +1,8 @@
-# Web Scanner FrontEnd
+# Web Scanner
 
-Web Scanner FrontEnd description
+Gives your typical flatbed USB scanner a simple, yet very efficient web interface.
+
+![Screenshot](docs/main.png) ![Screenshot](docs/options.png)
 
 ## Quick Start
 
@@ -23,7 +25,7 @@ For example, on Ubuntu:
 
 ## Development environment and release process
 
- - create virtualenv with Flask and Web Scanner FrontEnd installed into it (latter is installed in
+ - create virtualenv with Flask and Web Scanner installed into it (latter is installed in
    [develop mode](http://setuptools.readthedocs.io/en/latest/setuptools.html#development-mode) which allows
    modifying source code directly without a need to re-install the app): `make venv`
 
@@ -44,16 +46,4 @@ For example, on Ubuntu:
 
 ## Deployment
 
-If you are interested in an out-of-the-box deployment automation, check out accompanying
-[`cookiecutter-flask-ansible`](https://github.com/candidtim/cookiecutter-flask-ansible).
-
-Or, check out [Deploying with Fabric](http://flask.pocoo.org/docs/0.12/patterns/fabric/#fabric-deployment) on one of the
-possible ways to automate the deployment.
-
-In either case, generally the idea is to build a package (`make sdist`), deliver it to a server (`scp ...`),
-install it (`pip install webscanner.tar.gz`), ensure that configuration file exists and
-`WEBSCANNER_SETTINGS` environment variable points to it, ensure that user has access to the
-working directory to create and write log files in it, and finally run a
-[WSGI container](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/) with the application.
-And, most likely, it will also run behind a
-[reverse proxy](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/#proxy-setups).
+See [Flask Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/) for a number of ways to deploy your web application. For example, by using Apache and mod_wsgi.
