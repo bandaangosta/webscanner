@@ -43,9 +43,9 @@ def scanDo():
             proc.kill()
             outs, errs = proc.communicate()     
             return 'Scan command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
-                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+                   ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')
         return 'Scan command finished. \nOutput:\n{}'.format(outs.decode('utf-8')) + \
-               '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+               ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')
     except FileNotFoundError:
         return 'Scan command failed: {} not found'.format(args[0]) 
     except:
@@ -64,9 +64,9 @@ def scanClear():
             proc.kill()
             outs, errs = proc.communicate()     
             return 'Clear PDFs command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
-                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+                   ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')
         return 'Clear PDFs command finished.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
-                   '\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else ''
+               ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')
     except FileNotFoundError:
         return 'Clear PDFs command failed: {} not found'.format(args[0]) 
     except:
