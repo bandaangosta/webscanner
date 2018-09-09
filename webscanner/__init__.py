@@ -19,10 +19,10 @@ app.config['GMAIL_ACCOUNT_CREDENTIALS'] = None
 app.config['DEFAULT_RECIPIENT'] = None
 
 # Obtain available options for your scanner with scanimage -L. Following are just examples.
-SCAN_MODE_OPTIONS = ['Black & White', 'Color']
-SCAN_MODE_DEFAULT = 'Color'
-SCAN_RES_OPTIONS = [150, 300]
-SCAN_RES_DEFAULT = 150
+app.config['SCAN_MODE_OPTIONS'] = ['Black & White', 'Color']
+app.config['SCAN_MODE_DEFAULT'] = 'Color'
+app.config['SCAN_RES_OPTIONS'] = [150, 300]
+app.config['SCAN_RES_DEFAULT'] = 150
 
 # Override previous definitions from variables in settings.py in instance folder
 app.config.from_pyfile('settings.py', silent=True)
