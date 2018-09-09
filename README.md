@@ -52,13 +52,17 @@ See [Flask Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/) for a
 
 Install Docker (in this example, on a Raspberry Pi) following the [Documentation](https://docs.docker.com/install/linux/docker-ce/debian/#upgrade-docker-after-using-the-convenience-script).
 In the same folder as the Dockerfile, run the following to build the image:
+    
     docker build -t webscanner .
 
 You can test the web application is working by running the following and visiting the IP address of your device on a browser:
+    
     docker run -it --rm -p 80:5000 --name webscanner_container webscanner
 
 Leave it running in the background:
+    
     docker run -d --rm -p 80:5000 --name webscanner_container webscanner
 
 Leave it running in the background and restart automatically, particularly on server reboot:
+    
     docker run -d -p 80:5000 --restart unless-stopped --name webscanner_container webscanner
