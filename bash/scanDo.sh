@@ -1,8 +1,8 @@
 #!/bin/bash
 
 unix="$(date +%s)"
-folder=/home/pi/SCAN
-folderMerged=/home/pi/SCAN/merged
+folder=/home/daredevil/SCAN
+folderMerged=/home/daredevil/SCAN/merged
 tiffFile=$folder/$unix.tiff
 pdfFile=$folder/$unix.pdf
 pdfMergedFile=$folderMerged/merged.pdf
@@ -12,6 +12,7 @@ tiff2pdf -p A4 -j -q 90 -t "Document" -f -o $pdfFile $tiffFile
 sed -i 's|/DecodeParms << /ColorTransform 0 >>||' $pdfFile
 rm $tiffFile
 ls $folder/*.pdf
-pdftk $folder/*.pdf cat output $pdfMergedFile
+#pdftk $folder/*.pdf cat output $pdfMergedFile
+pdfunite $folder/*.pdf $pdfMergedFile
 echo 
 echo "Merged PDF file: $pdfMergedFile"

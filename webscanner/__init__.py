@@ -5,9 +5,12 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('webscanner.default_settings')
 
 ## Default definitions. Override with local values preferably using instance folder
+
+app.config['DEPLOYED_USING_DOCKER'] = False
 app.config['COMMAND_SCAN'] = 'scanDo'
 app.config['COMMAND_CLEAR'] = 'scanClear'
 app.config['COMMAND_SAVE'] = 'scanSave'
+app.config['COMMAND_SCP_COPY'] = ''
 app.config['DEFAULT_FILE_NAME'] = 'scan.pdf'
 
 # Path to "final" PDF file with appended pages after each COMMAND_SCAN is run. Must match definition in COMMAND_SCAN script.
@@ -23,6 +26,7 @@ app.config['SCAN_MODE_OPTIONS'] = ['Black & White', 'Color']
 app.config['SCAN_MODE_DEFAULT'] = 'Color'
 app.config['SCAN_RES_OPTIONS'] = [150, 300]
 app.config['SCAN_RES_DEFAULT'] = 150
+app.config['SCAN_TIMEOUT_SECS'] = 30
 
 # Override previous definitions from variables in settings.py in instance folder
 app.config.from_pyfile('settings.py', silent=True)

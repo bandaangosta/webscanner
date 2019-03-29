@@ -66,3 +66,21 @@ Leave it running in the background:
 Leave it running in the background and restart automatically, particularly on server reboot:
     
     docker run -d -p 80:5000 --restart unless-stopped --name webscanner_container webscanner
+
+A more robust method for deployment on x86 machines is the following
+
+    docker build -t webscanner -f Dockerfile.nginx-uwsgi .
+    docker run -d --restart=always -p 80:80 --name my_webscanner webscanner    
+
+In this case, commands can be sent from the container to the host through SSH (useful for other projects, as well). For examples, redefine in instance/setting.py, scanner commands as follow:
+
+    COMMAND_SCAN = 'ssh -o "StrictHostKeyChecking=no" daredevil@172.17.0.1 /home/daredevil/dev/webscanner/bash/scanDo.sh'
+    COMMAND_CLEAR = 'ssh -o "StrictHostKeyChecking=no" daredevil@172.17.0.1 /home/daredevil/dev/webscanner/bash/scanClear.sh'
+    COMMAND_SAVE = 'ssh -o "StrictHostKeyChecking=no" daredevil@172.17.0.1 /home/daredevil/dev/webscanner/bash/scanSave.sh'
+    COMMAND_SCP_COPY = 'scp -o "StrictHostKeyChecking=no" daredevil@172.17.0.1:{} {}'.format(PDF_FILE_PATH, PDF_FILE_PATH_CONTAINER)
+
+In order for this method to work, password-less login must be enabled as followed:
+
+    docker exec -it my_webscanner ssh-keygen
+    docker exec -it my_webscanner cat /root/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-folder=/home/pi/SCAN
+folder=/home/daredevil/SCAN
 rm $folder/*.pdf
 echo "Deleted all pdf files in $folder"

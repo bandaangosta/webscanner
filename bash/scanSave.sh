@@ -1,7 +1,7 @@
 #!/bin/bash
 
 unix="$(date +%s)"
-folderMerged=/home/pi/SCAN/merged
+folderMerged=/home/daredevil/SCAN/merged
 pdfMergedFile=$folderMerged/merged.pdf
 
 cp $pdfMergedFile $folderMerged/saved_$unix.pdf

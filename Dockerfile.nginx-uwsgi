@@ -1,0 +1,11 @@
+FROM tiangolo/uwsgi-nginx-flask:python3.6-alpine3.7
+COPY . /app
+RUN apk --update add --no-cache libstdc++ openssh-client && \
+    apk add --no-cache --virtual build-dependencies g++ && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apk del --no-cache build-dependencies && \
+    pip uninstall -y enum34
+ENV STATIC_PATH /app/webscanner/static
+
+

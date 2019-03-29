@@ -4,7 +4,8 @@ import yagmail
 import traceback
 import tempfile
 import shutil
-from subprocess import Popen, TimeoutExpired, PIPE
+import shlex
+from subprocess import Popen, TimeoutExpired, PIPE, check_output
 from webscanner import app
 
 @app.route('/')
@@ -35,10 +36,11 @@ def scanDo():
         return 'Mode is not a valid option'
 
     try:
-        args = ['scanDo', resolution, mode]
+        args = shlex.split(app.config.get('COMMAND_SCAN'))
+        args.extend([resolution, '"{}"'.format(mode)])
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         try:
-            outs, errs = proc.communicate(timeout=30)
+            outs, errs = proc.communicate(timeout=app.config.get('SCAN_TIMEOUT_SECS'))
         except TimeoutExpired:
             proc.kill()
             outs, errs = proc.communicate()     
@@ -49,6 +51,7 @@ def scanDo():
     except FileNotFoundError:
         return 'Scan command failed: {} not found'.format(args[0]) 
     except:
+        print(traceback.format_exc())
         return 'Scan command failed'
 
 @app.route('/clear')
@@ -56,10 +59,10 @@ def scanClear():
     ''' Run clear PDFs command (bash script) and return console output for display to user '''
     
     try:
-        args = ['scanClear']
+        args = shlex.split(app.config.get('COMMAND_CLEAR'))
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         try:
-            outs, errs = proc.communicate(timeout=30)
+            outs, errs = proc.communicate(timeout=app.config.get('SCAN_TIMEOUT_SECS'))
         except TimeoutExpired:
             proc.kill()
             outs, errs = proc.communicate()     
@@ -77,10 +80,10 @@ def scanSave():
     ''' Run save PDF command (bash script) and return console output for display to user '''
     
     try:
-        args = ['scanSave']
+        args = shlex.split(app.config.get('COMMAND_SAVE'))
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
         try:
-            outs, errs = proc.communicate(timeout=30)
+            outs, errs = proc.communicate(timeout=app.config.get('SCAN_TIMEOUT_SECS'))
         except TimeoutExpired:
             proc.kill()
             outs, errs = proc.communicate()     
@@ -101,6 +104,8 @@ def scanEmail():
     ''' 
     if app.config.get('GMAIL_ACCOUNT') is None or app.config.get('GMAIL_ACCOUNT_CREDENTIALS') is None:
         return 'Gmail account not configured'
+    if not os.path.exists(app.config.get('GMAIL_ACCOUNT_CREDENTIALS')):
+        return 'Gmail account credentials file not found at: {}'.format(app.config.get('GMAIL_ACCOUNT_CREDENTIALS'))
     
     recipient = request.args.get('email')       
     if recipient is None:
@@ -109,13 +114,30 @@ def scanEmail():
     fileName = request.args.get('filename')     
     if fileName is None:
         return 'No file name was defined'
-    
-    if not os.path.exists(app.config.get('PDF_FILE_PATH')):
-        return 'Scanned file was not found'
-    
+        
     # Create a copy of the scanned file with given name
-    tmpdir = tempfile.gettempdir()
-    shutil.copyfile(app.config.get('PDF_FILE_PATH'), os.path.join(tmpdir, fileName))
+    if app.config.get('DEPLOYED_USING_DOCKER'):
+        args = shlex.split(app.config.get('COMMAND_SCP_COPY'))
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        try:
+            outs, errs = proc.communicate(timeout=app.config.get('SCAN_TIMEOUT_SECS'))
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()     
+            return 'SCP COPY command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
+                   ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')                   
+        else:
+            if not os.path.exists(app.config.get('PDF_FILE_PATH_CONTAINER')):
+                return 'Scanned file was not found'
+
+            tmpdir = tempfile.gettempdir()
+            shutil.copyfile(app.config.get('PDF_FILE_PATH_CONTAINER'), os.path.join(tmpdir, fileName))
+    else:
+        if not os.path.exists(app.config.get('PDF_FILE_PATH')):
+            return 'Scanned file was not found'
+
+        tmpdir = tempfile.gettempdir()
+        shutil.copyfile(app.config.get('PDF_FILE_PATH'), os.path.join(tmpdir, fileName))
 
     try:
         yag = yagmail.SMTP(app.config['GMAIL_ACCOUNT'], oauth2_file=app.config['GMAIL_ACCOUNT_CREDENTIALS'])
@@ -134,13 +156,29 @@ def scanDownload():
         return 'No file name was defined'
 
     # Define PDF_FILE_PATH in <instance folder>/settings.py
-    if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
-        return send_file(app.config['PDF_FILE_PATH'],
-                         attachment_filename=fileName,
-                         mimetype='application/pdf',
-                         as_attachment=True)
+    if app.config.get('DEPLOYED_USING_DOCKER'):
+        args = shlex.split(app.config.get('COMMAND_SCP_COPY'))
+        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        try:
+            outs, errs = proc.communicate(timeout=app.config.get('SCAN_TIMEOUT_SECS'))
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()     
+            return 'SCP COPY command timeout.\nOutput:\n{}'.format(outs.decode('utf-8')) + \
+                   ('\nErrors:\n{}'.format(errs.decode('utf-8')) if errs else '')                   
+        else:
+            return send_file(app.config['PDF_FILE_PATH_CONTAINER'],
+                             attachment_filename=fileName,
+                             mimetype='application/pdf',
+                             as_attachment=True)
     else:
-        return "There was an error downloading requested PDF file. File not found." 
+        if app.config.get('PDF_FILE_PATH') is not None and os.path.exists(app.config.get('PDF_FILE_PATH')):
+            return send_file(app.config['PDF_FILE_PATH'],
+                             attachment_filename=fileName,
+                             mimetype='application/pdf',
+                             as_attachment=True)
+        else:
+            return "There was an error downloading requested PDF file. File not found: {}".format(app.config['PDF_FILE_PATH']) 
 
 @app.errorhandler(404)
 def pageNotFound(error):
