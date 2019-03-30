@@ -48,7 +48,7 @@ For example, on Ubuntu:
 
 See [Flask Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/) for a number of ways to deploy your web application. For example, by using Apache and mod_wsgi.
 
-## Deployment with Docker (experimental)
+## Deployment with Docker (Raspbian + Flask development server)
 
 Install Docker (in this example, on a Raspberry Pi) following the [Documentation](https://docs.docker.com/install/linux/docker-ce/debian/#upgrade-docker-after-using-the-convenience-script).
 In the same folder as the Dockerfile, run the following to build the image:
@@ -67,12 +67,14 @@ Leave it running in the background and restart automatically, particularly on se
     
     docker run -d -p 80:5000 --restart unless-stopped --name webscanner_container webscanner
 
-A more robust method for deployment on x86 machines is the following
+## Deployment with Docker (Alpine + nginx + uwsgi)
+
+A more robust method for deployment on x86 machines is the following:
 
     docker build -t webscanner -f Dockerfile.nginx-uwsgi .
     docker run -d --restart=always -p 80:80 --name my_webscanner webscanner    
 
-In this case, commands can be sent from the container to the host through SSH (useful for other projects, as well). For examples, redefine in instance/setting.py, scanner commands as follow:
+In this case, commands can be sent from the container to the host through SSH. For example, redefine in instance/setting.py, scanner commands as follow. In this case, we need to run the commands directly on the host because scanner drivers are already installed on the host (Ubuntu/Debian) and not available for the Linux distro of the container (Alpine). Although there are other solutions for this particular problem (like using a Debian-based nginx/uwsgi image and installing the scanner drivers in it), this is also an interesting experiment of container to host communication that could be applied to other projects as well:
 
     COMMAND_SCAN = 'ssh -o "StrictHostKeyChecking=no" daredevil@172.17.0.1 /home/daredevil/dev/webscanner/bash/scanDo.sh'
     COMMAND_CLEAR = 'ssh -o "StrictHostKeyChecking=no" daredevil@172.17.0.1 /home/daredevil/dev/webscanner/bash/scanClear.sh'
