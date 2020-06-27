@@ -5,7 +5,8 @@
 	<div class="btn-group-vertical" role="group" aria-label="Actions">
 		<button type="button" data-toggle="modal" data-target="#modalScan" class="btn btn-primary m-2">Scan document</button>
 		<button id="butSave" type="button" class="btn btn-primary m-2">Save copy</button>
-		<button type="button" data-toggle="modal" data-target="#modalDownload" class="btn btn-primary m-2">Download PDF</button>
+        <button id="butView" type="button" data-toggle="modal" data-target="#modalView" class="btn btn-primary m-2">View PDF</button>
+        <button type="button" data-toggle="modal" data-target="#modalDownload" class="btn btn-primary m-2">Download PDF</button>
 		<button type="button" data-toggle="modal" data-target="#modalSendEmail" class="btn btn-primary m-2">E-mail PDF</button>
 		<button id="butClear" type="button" class="btn btn-warning m-2">Clear PDFs</button>
 	</div>
@@ -78,6 +79,36 @@
 </div>
 
 <!-- Modal -->
+<div class="modal fade" id="modalView" tabindex="-1" role="dialog" aria-labelledby="modalView" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">View scanned PDF</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+       <div class="modal-body">
+        <button id="prev" class="btn btn-sm btn-info">Previous</button>
+        <button id="next" class="btn btn-sm btn-info">Next</button>
+        &nbsp; &nbsp;
+        <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+
+        <canvas id="the-canvas"></canvas>
+
+        <div class="form-group">
+            <label for="fileNameDown">File name</label>
+            <input id="fileNameDown" class="form-control" value="{{ config.DEFAULT_FILE_NAME }}" placeholder="You can define a DEFAULT_FILE_NAME" aria-label="enter file name here" name="fileNameDown">
+        </div>
+       </div>
+       <div class="modal-footer">
+         <button id="butDownload" type="button" class="btn btn-primary">Download</button>
+       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
 <div class="modal fade" id="modalSendEmail" tabindex="-1" role="dialog" aria-labelledby="modalSendEmail" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -107,37 +138,144 @@
  <script>
 	 $(document).ready(function(){
 	 	$('#resolution').val("{{ scanResolutionDefault }}");
-	 	$('#mode').val("{{ scanModeDefault | safe }}");	 
+	 	$('#mode').val("{{ scanModeDefault | safe }}");
 
-	 	$("#butScan").click(function(e) {	 	    
+	 	$("#butScan").click(function(e) {
 	 		var url = "{{ url_for('scanDo') }}";
 
-	 		$('#modalScan').modal('hide');	 			 		
+	 		$('#modalScan').modal('hide');
 	 		$("#actions").html('Sending scan command. Please wait...');
 	 	    $("#actions").load(url + '?resolution=' + $('#resolution').val() + '&mode=' + encodeURIComponent($('#mode').val()));
 	 	});
-	 	$("#butSave").click(function(e) {	 	    
+	 	$("#butSave").click(function(e) {
 	 		$("#actions").html('Sending save command...');
 	 	    $("#actions").load("{{ url_for('scanSave') }}");
 	 	});
-	 	$("#butDownload").click(function(e) {	 	    
+        $("#butView").click(function(e) {
+            $("#actions").html('Downloading and showing PDF...');
+            viewPDF();
+        });
+	 	$("#butDownload").click(function(e) {
 	 	    $("#actions").html('Downloading scanned file...');
 	 	    var url = "{{ url_for('scanDownload') }}";
 
-	 		$('#modalDownload').modal('hide');	 			 		
+	 		$('#modalDownload').modal('hide');
 	 		$(location).attr('href', url + '?filename=' + $('#fileNameDown').val());
 	 	});
-	 	$("#butEmail").click(function(e) {	 	  
+	 	$("#butEmail").click(function(e) {
 	 		var url = "{{ url_for('scanEmail') }}";
 
-	 		$('#modalSendEmail').modal('hide');	 		
-	 		$("#actions").html('Sending file to ' + $('#recipient').val() + '...');	 		
+	 		$('#modalSendEmail').modal('hide');
+	 		$("#actions").html('Sending file to ' + $('#recipient').val() + '...');
 	 	    $("#actions").load(url + '?email=' + $('#recipient').val() + '&filename=' + $('#fileNameEmail').val());
 	 	});
-	 	$("#butClear").click(function(e) {	
-	 		$("#actions").html('Sending clear PDFs command...'); 	    
+	 	$("#butClear").click(function(e) {
+	 		$("#actions").html('Sending clear PDFs command...');
 	 	    $("#actions").load("{{ url_for('scanClear') }}");
 	 	});
+
+        function viewPDF(){
+            // View https://mozilla.github.io/pdf.js/examples/
+
+            // If absolute URL from the remote server is provided, configure the CORS
+            // header on that server.
+            var url = "{{ url_for('scanDownload') }}" + '?filename=view.pdf';
+
+            // Loaded via <script> tag, create shortcut to access PDF.js exports.
+            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+            // The workerSrc property shall be specified.
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+
+            var pdfDoc = null,
+                pageNum = 1,
+                pageRendering = false,
+                pageNumPending = null,
+                scale = 0.8,
+                canvas = document.getElementById('the-canvas'),
+                ctx = canvas.getContext('2d');
+
+            /**
+             * Get page info from document, resize canvas accordingly, and render page.
+             * @param num Page number.
+             */
+            function renderPage(num) {
+              pageRendering = true;
+              // Using promise to fetch the page
+              pdfDoc.getPage(num).then(function(page) {
+                var viewport = page.getViewport({scale: scale});
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                  canvasContext: ctx,
+                  viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+
+                // Wait for rendering to finish
+                renderTask.promise.then(function() {
+                  pageRendering = false;
+                  if (pageNumPending !== null) {
+                    // New page rendering is pending
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                  }
+                });
+              });
+
+              // Update page counters
+              document.getElementById('page_num').textContent = num;
+            }
+
+            /**
+             * If another page rendering in progress, waits until the rendering is
+             * finised. Otherwise, executes rendering immediately.
+             */
+            function queueRenderPage(num) {
+              if (pageRendering) {
+                pageNumPending = num;
+              } else {
+                renderPage(num);
+              }
+            }
+
+            /**
+             * Displays previous page.
+             */
+            function onPrevPage() {
+              if (pageNum <= 1) {
+                return;
+              }
+              pageNum--;
+              queueRenderPage(pageNum);
+            }
+            document.getElementById('prev').addEventListener('click', onPrevPage);
+
+            /**
+             * Displays next page.
+             */
+            function onNextPage() {
+              if (pageNum >= pdfDoc.numPages) {
+                return;
+              }
+              pageNum++;
+              queueRenderPage(pageNum);
+            }
+            document.getElementById('next').addEventListener('click', onNextPage);
+
+            /**
+             * Asynchronously downloads PDF.
+             */
+            pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+              pdfDoc = pdfDoc_;
+              document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+              // Initial/first page rendering
+              renderPage(pageNum);
+            });
+        }
 
 	 });
  </script>

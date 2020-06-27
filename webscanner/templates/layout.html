@@ -31,6 +31,8 @@
   <!-- Bootstrap 4.1.0 -->
   <script src="{{ url_for('static', filename='vendor/js/bootstrap.min.js') }}"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
+
     <div class="container-fluid">
 
       {% for message in get_flashed_messages(category_filter=['error']) %}
