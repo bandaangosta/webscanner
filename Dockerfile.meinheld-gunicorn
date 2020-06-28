@@ -1,0 +1,13 @@
+# Deployment with this image works, but with some still unresolved caveats:
+# - Cannot mount app on subpath
+# - File download does not working? Further tests needed
+FROM tiangolo/meinheld-gunicorn-flask:python3.7-alpine3.8
+COPY . /app
+RUN apk --update add --no-cache libstdc++ openssh-client && \
+    apk add --no-cache --virtual build-dependencies g++ && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apk del --no-cache build-dependencies && \
+    pip uninstall -y enum34
+ENV STATIC_PATH /app/webscanner/static
+ENV MODULE_NAME webscanner
