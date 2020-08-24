@@ -97,7 +97,8 @@
         <canvas id="the-canvas"></canvas>
 
         <div class="modal-footer">
-         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          <button type="button" id="btn_download_from_view" class="btn btn-primary m-2">Download PDF</button>
+           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
        </div>
     </div>
   </div>
@@ -146,10 +147,17 @@
 	 		$("#actions").html('Sending save command...');
 	 	    $("#actions").load("{{ url_for('scanSave') }}");
 	 	});
-        $("#butView").click(function(e) {
-            $("#actions").html('Downloading and showing PDF...');
-            viewPDF();
-        });
+
+    $("#butView").click(function(e) {
+        $("#actions").html('Downloading and showing PDF...');
+        viewPDF();
+    });
+
+    $("#btn_download_from_view").click(function(e) {
+      $('#modalView').modal('hide');
+      $('#modalDownload').modal('show');
+    });
+
 	 	$("#butDownload").click(function(e) {
 	 	    $("#actions").html('Downloading scanned file...');
 	 	    var url = "{{ url_for('scanDownload') }}";
