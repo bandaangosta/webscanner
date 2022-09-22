@@ -178,11 +178,21 @@
 	 	});
 
         function viewPDF(){
-            // View https://mozilla.github.io/pdf.js/examples/
+	  const characters =
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+
+	  random_string = characters.charAt(Math.floor(Math.random() * characters.length)) +
+	    characters.charAt(Math.floor(Math.random() * characters.length)) + 
+	    characters.charAt(Math.floor(Math.random() * characters.length)) +
+	    characters.charAt(Math.floor(Math.random() * characters.length)) + 
+	    characters.charAt(Math.floor(Math.random() * characters.length)) +
+	    characters.charAt(Math.floor(Math.random() * characters.length));
+
+	    // View https://mozilla.github.io/pdf.js/examples/
 
             // If absolute URL from the remote server is provided, configure the CORS
             // header on that server.
-            var url = "{{ url_for('scanDownload') }}" + '?filename=view.pdf';
+            var url = "{{ url_for('scanDownload') }}" + "?filename=view\_" + random_string + ".pdf";
 
             // Loaded via <script> tag, create shortcut to access PDF.js exports.
             var pdfjsLib = window['pdfjs-dist/build/pdf'];
